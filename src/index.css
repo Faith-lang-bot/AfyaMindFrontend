@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-serif: 'Lora', serif;
+    --font-sans: 'Outfit', sans-serif;
+
+    --background: 30 20% 95%;
+    --foreground: 25 8% 24%;
+
+    --card: 40 25% 99%;
+    --card-foreground: 25 8% 24%;
+
+    --popover: 40 25% 99%;
+    --popover-foreground: 25 8% 24%;
+
+    --primary: 140 10% 42%;
+    --primary-foreground: 40 25% 99%;
+
+    --secondary: 30 15% 88%;
+    --secondary-foreground: 25 8% 24%;
+
+    --muted: 30 15% 88%;
+    --muted-foreground: 30 7% 53%;
+
+    --accent: 30 50% 90%;
+    --accent-foreground: 25 8% 24%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 40 25% 99%;
+
+    --border: 30 15% 85%;
+    --input: 30 15% 85%;
+    --ring: 140 10% 42%;
+
+    --radius: 1rem;
+
+    --clay: 15 45% 72%;
+    --clay-foreground: 25 8% 24%;
+    --sun: 33 60% 90%;
+    --sun-foreground: 25 8% 24%;
+    --sage: 130 10% 66%;
+    --sage-foreground: 25 8% 24%;
+    --stone: 30 12% 86%;
+
+    --sidebar-background: 40 25% 99%;
+    --sidebar-foreground: 25 8% 24%;
+    --sidebar-primary: 140 10% 42%;
+    --sidebar-primary-foreground: 40 25% 99%;
+    --sidebar-accent: 30 15% 88%;
+    --sidebar-accent-foreground: 25 8% 24%;
+    --sidebar-border: 30 15% 85%;
+    --sidebar-ring: 140 10% 42%;
+  }
+
+  .dark {
+    --background: 25 15% 10%;
+    --foreground: 30 20% 90%;
+    --card: 25 12% 14%;
+    --card-foreground: 30 20% 90%;
+    --popover: 25 12% 14%;
+    --popover-foreground: 30 20% 90%;
+    --primary: 140 10% 55%;
+    --primary-foreground: 25 15% 10%;
+    --secondary: 25 10% 20%;
+    --secondary-foreground: 30 20% 90%;
+    --muted: 25 10% 20%;
+    --muted-foreground: 30 10% 60%;
+    --accent: 25 10% 20%;
+    --accent-foreground: 30 20% 90%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 30 20% 90%;
+    --border: 25 10% 20%;
+    --input: 25 10% 20%;
+    --ring: 140 10% 55%;
+    --clay: 15 35% 50%;
+    --sun: 33 40% 30%;
+    --sage: 130 10% 45%;
+    --stone: 25 10% 22%;
+    --sidebar-background: 25 12% 12%;
+    --sidebar-foreground: 30 20% 90%;
+    --sidebar-primary: 140 10% 55%;
+    --sidebar-primary-foreground: 25 15% 10%;
+    --sidebar-accent: 25 10% 18%;
+    --sidebar-accent-foreground: 30 20% 90%;
+    --sidebar-border: 25 10% 20%;
+    --sidebar-ring: 140 10% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+  }
+}
+
+@layer components {
+  .card-elevated {
+    @apply bg-card rounded-[2rem] shadow-[0_8px_32px_rgba(66,61,56,0.03)] border border-border/30;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-4 px-4 py-3 rounded-2xl text-muted-foreground hover:bg-secondary/50 transition-all;
+  }
+
+  .nav-item-active {
+    @apply flex items-center gap-4 px-4 py-3 bg-card shadow-[0_2px_8px_rgba(66,61,56,0.04)] rounded-2xl text-foreground font-medium transition-all;
+  }
+}
