@@ -321,7 +321,22 @@ export function getCarePlan(userId?: number) {
   const raw = localStorage.getItem(carePlanKey(userId));
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as CarePlan;
+    const parsed = JSON.parse(raw) as Partial<CarePlan>;
+    return {
+      admissionId: parsed.admissionId || 0,
+      riskLevel: (parsed.riskLevel as RiskLevel) || "low",
+      phq9Score: parsed.phq9Score || 0,
+      phq9Severity: parsed.phq9Severity || "not_assessed",
+      phq9RiskLevel: (parsed.phq9RiskLevel as RiskLevel) || "low",
+      recommendationType: parsed.recommendationType || "motivation",
+      recommendationMessage: parsed.recommendationMessage || "",
+      suggestedActions: parsed.suggestedActions || [],
+      screenings: parsed.screenings || [],
+      primaryFocuses: parsed.primaryFocuses || [],
+      recommendedExercises: parsed.recommendedExercises || [],
+      progressLabel: parsed.progressLabel || "",
+      createdAt: parsed.createdAt || new Date().toISOString(),
+    };
   } catch {
     return null;
   }
@@ -388,8 +403,8 @@ export function sessionTasks(plan: CarePlan | null) {
     tasks.push({
       key: "chwChatComplete",
       title: "Talk to a CHW or support contact",
-      description: "Use realtime chat when online or SMS fallback when connectivity is poor.",
-      href: "/care-chat",
+      description: "Use CHW Support and the linked appointment flow for follow-up care.",
+      href: "/directory",
     });
   }
 

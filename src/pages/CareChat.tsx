@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { api, type CHWLinkStatus, type CareMessage } from "@/lib/api";
+import { DEFAULT_API_BASE, api, type CHWLinkStatus, type CareMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   Loader2,
-  MapPin,
   MessageSquare,
+  Phone,
   Send,
   ShieldCheck,
   User,
@@ -199,7 +199,7 @@ export default function CareChat() {
             role: "mental_health_user" as const,
             roomId: buildRoomId(user.id, patient.patient_id),
             subtitle: `${patient.region} · ${patient.total_checkins} check-ins`,
-            detail: patient.last_checkin_at ? `Last check-in ${formatDateTime(patient.last_checkin_at)}` : "No recent check-in",
+            detail: patient.patient_phone || undefined,
             riskLevel: patient.last_risk_level,
           }));
 
@@ -882,7 +882,7 @@ export default function CareChat() {
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                       {selectedTarget.detail && (
                         <span className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
+                          <Phone className="h-4 w-4" />
                           {selectedTarget.detail}
                         </span>
                       )}
@@ -1043,7 +1043,7 @@ function buildRoomId(firstUserId: number, secondUserId: number) {
 }
 
 function buildCareSocketUrl(roomId: string, token: string) {
-  const explicitBase = import.meta.env.VITE_WS_BASE || import.meta.env.VITE_API_BASE || window.location.origin;
+  const explicitBase = import.meta.env.VITE_WS_BASE || import.meta.env.VITE_API_BASE || DEFAULT_API_BASE;
   const base = new URL(explicitBase, window.location.origin);
   const protocol = base.protocol === "https:" ? "wss:" : "ws:";
   const wsUrl = new URL(`${protocol}//${base.host}/ws/care`);

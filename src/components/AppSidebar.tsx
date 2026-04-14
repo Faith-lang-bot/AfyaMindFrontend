@@ -12,7 +12,6 @@ import {
   ClipboardList,
   LogOut,
   Sparkles,
-  Video,
 } from "lucide-react";
 
 const userNav = [
@@ -21,7 +20,6 @@ const userNav = [
   { title: "Journal", url: "/journal", icon: BookOpen },
   { title: "Appointments", url: "/appointments", icon: Calendar },
   { title: "CHW Support", url: "/directory", icon: Users },
-  { title: "Care Chat", url: "/care-chat", icon: Video },
   { title: "Community", url: "/community", icon: MessageCircle },
   { title: "Resources", url: "/resources", icon: BookHeart },
   { title: "Rewards", url: "/rewards", icon: Gift },
@@ -32,7 +30,6 @@ const chwNav = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Caseload", url: "/caseload", icon: ClipboardList },
   { title: "Directory", url: "/directory", icon: Users },
-  { title: "Care Chat", url: "/care-chat", icon: Video },
   { title: "Community", url: "/community", icon: MessageCircle },
   { title: "Resources", url: "/resources", icon: BookHeart },
   { title: "AI Companion", url: "/ai-chat", icon: Sparkles },

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
+import { api, type RewardsBalance } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Gift, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 export default function Rewards() {
   const { toast } = useToast();
-  const [rewards, setRewards] = useState<any>(null);
+  const [rewards, setRewards] = useState<RewardsBalance | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -17,10 +17,10 @@ export default function Rewards() {
     setLoading(true);
     try {
       const res = await api.redeemRewards(points);
-      setRewards(res);
+      setRewards({ points: res.points ?? res.remaining_points });
       toast({ title: "Points redeemed!", description: `Remaining: ${res.points}` });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Error", description: getErrorMessage(err), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -66,4 +66,8 @@ export default function Rewards() {
       </div>
     </div>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Something went wrong";
 }

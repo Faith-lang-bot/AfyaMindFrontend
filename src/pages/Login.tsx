@@ -25,8 +25,8 @@ export default function Login() {
           ? "/admission"
           : "/dashboard";
       navigate(nextPath);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -87,4 +87,8 @@ export default function Login() {
       </div>
     </div>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unable to sign in";
 }

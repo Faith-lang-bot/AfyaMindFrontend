@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, type CHWCaseload, type CHWCaseloadPatient } from "@/lib/api";
-import { AlertTriangle, MessageSquareHeart, Phone, Send, Users } from "lucide-react";
+import { AlertTriangle, MessageSquareHeart, Phone, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -48,37 +48,6 @@ export default function Caseload() {
     } catch (error: any) {
       toast({
         title: "Unable to send motivation",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingPatientId(null);
-    }
-  };
-
-  const handleSendReminder = async (patient: CHWCaseloadPatient) => {
-    if (!patient.patient_phone?.trim()) {
-      toast({
-        title: "Missing patient phone",
-        description: "This patient needs a phone number on file before reminders can be sent.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoadingPatientId(patient.patient_id);
-    try {
-      await api.sendSMS({
-        to: patient.patient_phone.trim(),
-        message: `AfyaMind reminder: Hello ${patient.patient_name}, this is your care team checking in. Please keep up with your care plan and upcoming session.`,
-      });
-      toast({
-        title: "Reminder sent by SMS",
-        description: `Reminder delivered to ${patient.patient_name}.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Unable to send reminder",
         description: error.message,
         variant: "destructive",
       });
@@ -138,16 +107,6 @@ export default function Caseload() {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-full"
-                  disabled={isSending}
-                  onClick={() => void handleSendReminder(patient)}
-                >
-                  <Send className="mr-2 h-4 w-4" />
-                  {isSending ? "Sending..." : "Send SMS Reminder"}
-                </Button>
                 <Button
                   type="button"
                   className="rounded-full"

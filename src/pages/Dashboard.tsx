@@ -15,9 +15,10 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { api, type DashboardSummary, type CertificateResponse } from "@/lib/api";
+import { api, type DashboardSummary, type CertificateResponse, type VoiceHelplineResponse } from "@/lib/api";
 import { downloadCertificatePdf } from "@/lib/certificate";
 import {
+  focusLabel,
   getCarePlan,
   getSessionProgress,
   quickExercises,
@@ -42,6 +43,8 @@ export default function Dashboard() {
   const [progress, setProgress] = useState<SessionProgress>(getSessionProgress(user?.id));
   const [certificateName, setCertificateName] = useState(user?.name || "");
   const [generating, setGenerating] = useState(false);
+  const [helplineLoading, setHelplineLoading] = useState(false);
+  const [helplineScript, setHelplineScript] = useState<VoiceHelplineResponse | null>(null);
 
   useEffect(() => {
     api.getDashboardSummary().then(setSummary).catch(console.error);
@@ -145,6 +148,22 @@ export default function Dashboard() {
     }
   };
 
+  const handleLoadHelpline = async () => {
+    setHelplineLoading(true);
+    try {
+      const response = await api.getVoiceHelpline({ language: user?.language });
+      setHelplineScript(response);
+      toast({
+        title: "Voice helpline ready",
+        description: "Loaded the backend helpline script for your current language.",
+      });
+    } catch (err: any) {
+      toast({ title: "Unable to load helpline", description: err.message, variant: "destructive" });
+    } finally {
+      setHelplineLoading(false);
+    }
+  };
+
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
@@ -186,6 +205,11 @@ export default function Dashboard() {
                 <div className="mt-5 flex flex-wrap gap-3 text-sm text-muted-foreground">
                   <span className="rounded-full bg-background/80 px-4 py-2">PHQ-9 score: {carePlan.phq9Score}</span>
                   <span className="rounded-full bg-background/80 px-4 py-2">Severity: {severityLabel(carePlan.phq9Severity)}</span>
+                  {carePlan.primaryFocuses.map((focus) => (
+                    <span key={focus} className="rounded-full bg-background/80 px-4 py-2">
+                      Focus: {focusLabel(focus)}
+                    </span>
+                  ))}
                 </div>
               )}
             </div>
@@ -193,7 +217,7 @@ export default function Dashboard() {
             <div className="grid gap-4 p-8">
               <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Recommended path</p>
               {(carePlan?.suggestedActions || [
-                "Complete your PHQ-9 intake to unlock the right support path.",
+                "Complete your screening intake to unlock the right support path.",
                 "Use the AI companion for guided exercises.",
                 "Reach out early if symptoms worsen.",
               ]).map((action) => (
@@ -228,9 +252,9 @@ export default function Dashboard() {
                 description={carePlan?.riskLevel === "high" ? "Start the most supportive path immediately." : "Use a guided conversation in your chosen language."}
               />
               <QuickLinkCard
-                href="/community"
-                title="Chat with support"
-                description="Join community support or follow up with a CHW conversation."
+                href="/directory"
+                title="Open CHW support"
+                description="Link or review your CHW and use the follow-up appointment flow."
               />
               <QuickLinkCard
                 href="/directory"
@@ -300,15 +324,18 @@ export default function Dashboard() {
           <div className="flex flex-col gap-6">
             <div className="card-elevated p-8">
               <h2 className="text-2xl tracking-tight">Short exercises</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Use one quick reset and then track it in your session.</p>
+              <p className="mt-2 text-sm text-muted-foreground">Use the exercises matched to your screening results and then track them in your session.</p>
               <div className="mt-5 space-y-3">
-                {quickExercises.map((exercise) => (
+                {(carePlan?.recommendedExercises?.length ? carePlan.recommendedExercises : quickExercises).map((exercise) => (
                   <div key={exercise.title} className="rounded-2xl border border-border/70 bg-background/70 px-4 py-4">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-medium">{exercise.title}</p>
                       <span className="rounded-full bg-secondary px-3 py-1 text-xs text-muted-foreground">{exercise.duration}</span>
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">{exercise.description}</p>
+                    {"focus" in exercise && (
+                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">{focusLabel(exercise.focus)}</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -350,6 +377,27 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+        </section>
+      )}
+
+      {isUser && (
+        <section className="card-elevated p-8">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-2xl tracking-tight">Voice Helpline</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Load a short guided safety script from the backend when you need a calming prompt.
+              </p>
+            </div>
+            <Button type="button" className="rounded-2xl" disabled={helplineLoading} onClick={() => void handleLoadHelpline()}>
+              {helplineLoading ? "Loading..." : "Load script"}
+            </Button>
+          </div>
+          {helplineScript && (
+            <div className="mt-5 rounded-2xl border border-border/60 bg-background/70 px-4 py-4">
+              <p className="text-sm leading-6">{helplineScript.script}</p>
+            </div>
+          )}
         </section>
       )}
 

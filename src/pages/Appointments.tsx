@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { api, type Appointment, type Reminder } from "@/lib/api";
+import { api, type Appointment, type CHWDirectoryEntry, type Reminder } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { BellRing, Calendar, Phone, User } from "lucide-react";
+import { BellRing, Calendar, MapPin, Phone, User } from "lucide-react";
 
 export default function Appointments() {
   const { toast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [therapist, setTherapist] = useState("");
+  const [directory, setDirectory] = useState<CHWDirectoryEntry[]>([]);
+  const [selectedCHW, setSelectedCHW] = useState<CHWDirectoryEntry | null>(null);
+  const [notificationPhone, setNotificationPhone] = useState("");
   const [sessionMode, setSessionMode] = useState("in_person");
   const [appointmentTime, setAppointmentTime] = useState("");
   const [reminderTitle, setReminderTitle] = useState("");
@@ -27,18 +29,29 @@ export default function Appointments() {
     [reminders],
   );
 
+  const availableCHWs = useMemo(
+    () =>
+      directory
+        .filter((entry) => entry.is_registered)
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [directory],
+  );
+
   useEffect(() => {
     void loadAppointmentsPage();
   }, []);
 
   const loadAppointmentsPage = async () => {
     try {
-      const [appointmentsData, remindersData] = await Promise.all([
+      const [appointmentsData, remindersData, directoryData] = await Promise.all([
         api.getAppointments(),
         api.getReminders(),
+        api.getCHWDirectory(),
       ]);
       setAppointments(appointmentsData);
       setReminders(remindersData);
+      setDirectory(directoryData);
+      setSelectedCHW((current) => current && directoryData.some((entry) => entry.id === current.id) ? current : directoryData.find((entry) => entry.is_registered) ?? null);
     } catch (err: any) {
       toast({ title: "Unable to load appointments", description: err.message, variant: "destructive" });
     }
@@ -46,22 +59,38 @@ export default function Appointments() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedCHW?.name || !appointmentTime) return;
     setLoading(true);
     try {
       const response = await api.createAppointment({
-        therapist,
+        therapist: selectedCHW.name,
         session_mode: sessionMode,
         appointment_time: appointmentTime,
+        notification_phone: notificationPhone.trim() || undefined,
       });
+
+      const userSMSDelivered = response.sms_status && response.sms_status !== "skipped";
+      const contactSMSDelivered = response.contact_sms_status && response.contact_sms_status !== "skipped";
+
+      let bookingSMSMessage = `You earned ${response.reward_points} reward points and a reminder was added automatically.`;
+      if (userSMSDelivered && contactSMSDelivered) {
+        bookingSMSMessage = `You earned ${response.reward_points} reward points, and booking SMS was sent to both you and your appointment contact.`;
+      } else if (userSMSDelivered) {
+        bookingSMSMessage = `You earned ${response.reward_points} reward points, and your reminder was sent by SMS.`;
+      } else if (contactSMSDelivered) {
+        bookingSMSMessage = `You earned ${response.reward_points} reward points, and your appointment contact was notified by SMS.`;
+      }
+
+      if (response.contact_sms_warning) {
+        bookingSMSMessage += ` ${response.contact_sms_warning}`;
+      }
+
       toast({
         title: "Appointment booked",
-        description:
-          response.sms_status && response.sms_status !== "skipped"
-            ? `You earned ${response.reward_points} reward points, and your reminder was sent by SMS.`
-            : `You earned ${response.reward_points} reward points and a reminder was added automatically.`,
+        description: bookingSMSMessage,
       });
-      setTherapist("");
       setAppointmentTime("");
+      setNotificationPhone(selectedCHW.phone || "");
       await loadAppointmentsPage();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -104,18 +133,44 @@ export default function Appointments() {
 
       <div className="card-elevated p-8">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-2">
-              <Label htmlFor="therapist">Therapist Name</Label>
-              <Input
-                id="therapist"
-                value={therapist}
-                onChange={(e) => setTherapist(e.target.value)}
-                placeholder="Dr. Smith"
-                required
-                className="rounded-2xl h-12"
-              />
+          <div className="space-y-3">
+            <Label>Choose a CHW</Label>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {availableCHWs.map((chw) => {
+                const isSelected = selectedCHW?.id === chw.id;
+                return (
+                  <button
+                    key={`${chw.id}-${chw.name}`}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCHW(chw);
+                      setNotificationPhone(chw.phone || "");
+                    }}
+                    className={`rounded-2xl border p-4 text-left transition-all ${
+                      isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
+                    }`}
+                  >
+                    <div className="font-medium">{chw.name}</div>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {chw.region}
+                    </div>
+                    <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="h-3.5 w-3.5" />
+                      {chw.phone || "No phone on file"}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
+            {availableCHWs.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-border/70 px-4 py-4 text-sm text-muted-foreground">
+                No registered CHWs are available yet.
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <Label htmlFor="appointment_time">Date & Time</Label>
               <Input
@@ -124,6 +179,17 @@ export default function Appointments() {
                 value={appointmentTime}
                 onChange={(e) => setAppointmentTime(e.target.value)}
                 required
+                className="rounded-2xl h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notification_phone">Notification Phone Number</Label>
+              <Input
+                id="notification_phone"
+                type="tel"
+                value={notificationPhone}
+                onChange={(e) => setNotificationPhone(e.target.value)}
+                placeholder="+2547..."
                 className="rounded-2xl h-12"
               />
             </div>
@@ -147,7 +213,7 @@ export default function Appointments() {
               ))}
             </div>
           </div>
-          <Button type="submit" disabled={loading} className="rounded-2xl h-11 self-end px-8">
+          <Button type="submit" disabled={loading || !selectedCHW} className="rounded-2xl h-11 self-end px-8">
             {loading ? "Booking..." : "Book Appointment"}
           </Button>
         </form>
@@ -182,9 +248,8 @@ export default function Appointments() {
                   size="sm"
                   className="rounded-full gap-2 border-primary/30 text-primary hover:bg-primary/5"
                 >
-                  <Link to="/care-chat">
-                    <Phone className="h-3.5 w-3.5" />
-                    Open Care Chat
+                  <Link to="/directory">
+                    Open CHW Support
                   </Link>
                 </Button>
                 <span

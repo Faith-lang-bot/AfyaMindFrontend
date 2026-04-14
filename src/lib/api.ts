@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_BASE || window.location.origin;
+export const DEFAULT_API_BASE = import.meta.env.DEV ? "http://localhost:8080" : "https://afyamentbackend.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE || DEFAULT_API_BASE;
 
 interface AuthUser {
   id: number;
@@ -67,8 +68,8 @@ interface AppointmentCreationResponse {
   message: string;
   sms_status?: string;
   sms_warning?: string;
-  chw_sms_status?: string;
-  chw_sms_warning?: string;
+  contact_sms_status?: string;
+  contact_sms_warning?: string;
 }
 
 interface ReminderCreationResponse {
@@ -88,6 +89,11 @@ interface MotivationResponse {
   message: string;
   language: string;
   provider?: SmsProviderResponse;
+}
+
+interface VoiceHelplineResponse {
+  language: string;
+  script: string;
 }
 
 interface CommunityMessage {
@@ -209,6 +215,8 @@ interface AIAssistantResponse {
   reply: string;
   suggested_actions: string[];
   risk_level: string;
+  sms_status?: string;
+  sms_warning?: string;
 }
 
 interface CertificateResponse {
@@ -300,7 +308,7 @@ class ApiClient {
   }
 
   // Appointments
-  createAppointment(data: { therapist: string; session_mode: string; appointment_time: string }) {
+  createAppointment(data: { therapist: string; session_mode: string; appointment_time: string; notification_phone?: string }) {
     return this.request<AppointmentCreationResponse>("POST", "/api/appointments", data);
   }
 
@@ -339,7 +347,7 @@ class ApiClient {
   }
 
   // AI Assistant
-  askAI(data: { prompt: string; language: string }) {
+  askAI(data: { prompt: string; language: string; send_sms?: boolean; sms_to?: string }) {
     return this.request<AIAssistantResponse>("POST", "/api/ai/assistant", data);
   }
 
@@ -360,12 +368,16 @@ class ApiClient {
     return this.request<CHWCaseload>("GET", "/api/chw/caseload");
   }
 
+  sendMotivation(data: { to: string; language?: string }) {
+    return this.request<MotivationResponse>("POST", "/api/motivation/send", data);
+  }
+
   sendSMS(data: { to: string; message: string }) {
     return this.request<SmsProviderResponse>("POST", "/api/sms/send", data);
   }
 
-  sendMotivation(data: { to: string; language?: string }) {
-    return this.request<MotivationResponse>("POST", "/api/motivation/send", data);
+  getVoiceHelpline(data?: { language?: string }) {
+    return this.request<VoiceHelplineResponse>("POST", "/api/voice/helpline", data ?? {});
   }
 
   // Admission
@@ -392,11 +404,6 @@ class ApiClient {
 
   generateCertification() {
     return this.request<CertificateResponse>("POST", "/api/certification/generate");
-  }
-
-  // Language
-  updateLanguage(language: string) {
-    return this.request<any>("POST", "/api/me/language", { language });
   }
 }
 
@@ -426,4 +433,5 @@ export type {
   RewardsBalance,
   ScreeningResult,
   SmsProviderResponse,
+  VoiceHelplineResponse,
 };

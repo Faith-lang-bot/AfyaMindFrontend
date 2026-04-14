@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Bot, Globe2, Loader2, Send, Sparkles, User } from "lucide-react";
+import { Bot, Loader2, Send, Sparkles, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { getCarePlan, languageOptions, recommendationHeadline } from "@/lib/wellness";
+import { focusLabel, getCarePlan, recommendationHeadline } from "@/lib/wellness";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -18,7 +18,7 @@ const multilingualPrompts: Record<string, string[]> = {
   en: [
     "I feel overwhelmed today",
     "Guide me through a short breathing exercise",
-    "Help me understand my PHQ-9 support path",
+    "Help me understand my screening support path",
     "I need calm sleep ideas",
   ],
   sw: [
@@ -51,7 +51,6 @@ export default function AIChat() {
   const { user } = useAuth();
   const { toast } = useToast();
   const carePlan = getCarePlan(user?.id);
-  const [selectedLanguage, setSelectedLanguage] = useState(user?.language || "en");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 0,
@@ -65,10 +64,6 @@ export default function AIChat() {
   const [modelName, setModelName] = useState("AfyaMind");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setSelectedLanguage(user?.language || "en");
-  }, [user?.language]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -85,7 +80,9 @@ export default function AIChat() {
 
     try {
       const contextualPrompt = [
-        carePlan ? `Current support status: ${carePlan.riskLevel} risk, PHQ-9 score ${carePlan.phq9Score}, ${carePlan.recommendationMessage}` : "",
+        carePlan
+          ? `Current support status: ${carePlan.riskLevel} risk, PHQ-9 score ${carePlan.phq9Score}, focuses ${carePlan.primaryFocuses.join(", ")}, ${carePlan.recommendationMessage}`
+          : "",
         "Keep the conversation warm, practical, and flowing naturally.",
         prompt,
       ]
@@ -94,7 +91,7 @@ export default function AIChat() {
 
       const result = await api.askAI({
         prompt: contextualPrompt,
-        language: selectedLanguage,
+        language: user?.language || "en",
       });
 
       setModelName(result.model);
@@ -115,7 +112,7 @@ export default function AIChat() {
     }
   };
 
-  const quickPrompts = multilingualPrompts[selectedLanguage] || multilingualPrompts.en;
+  const quickPrompts = multilingualPrompts[user?.language || "en"] || multilingualPrompts.en;
 
   return (
     <div className="animate-fade-in flex flex-col gap-4 h-[calc(100vh-7rem)]">
@@ -133,30 +130,14 @@ export default function AIChat() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {languageOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setSelectedLanguage(option.value)}
-                className={`rounded-full border px-4 py-2 text-sm transition-all ${
-                  selectedLanguage === option.value
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background/80 text-muted-foreground hover:border-primary/30"
-                }`}
-              >
-                <span className="inline-flex items-center gap-2">
-                  <Globe2 className="h-4 w-4" />
-                  {option.label}
-                </span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {carePlan && (
           <div className="mt-5 rounded-2xl bg-background/75 px-4 py-3 text-sm text-muted-foreground">
             Current support path: {recommendationHeadline(carePlan)}
+            {carePlan.primaryFocuses.length > 0 && (
+              <div className="mt-2">Current focuses: {carePlan.primaryFocuses.map(focusLabel).join(", ")}</div>
+            )}
           </div>
         )}
       </header>

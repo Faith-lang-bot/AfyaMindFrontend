@@ -19,7 +19,7 @@ export default function Index() {
 
   const destination =
     user.role === "mental_health_user" && !hasCompletedAdmission(user.id)
-      ? "/admission"
+      ? "/checkin"
       : "/dashboard";
 
   return <Navigate to={destination} replace />;

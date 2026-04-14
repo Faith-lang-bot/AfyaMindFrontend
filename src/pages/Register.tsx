@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Phone } from "lucide-react";
-import { hasCompletedAdmission, languageOptions } from "@/lib/wellness";
+import { hasCompletedAdmission } from "@/lib/wellness";
 
 export default function Register() {
   const { register } = useAuth();
@@ -15,7 +15,6 @@ export default function Register() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("mental_health_user");
-  const [language, setLanguage] = useState("en");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,14 +27,14 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const authUser = await register(name, email, phone.trim(), password, language, role);
+      const authUser = await register(name, email, phone.trim(), password, "en", role);
       const nextPath =
         authUser.role === "mental_health_user" && !hasCompletedAdmission(authUser.id)
           ? "/admission"
           : "/dashboard";
       navigate(nextPath);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -81,27 +80,6 @@ export default function Register() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" required className="rounded-2xl h-12" />
             </div>
-
-            <div className="space-y-3">
-              <Label>Preferred language</Label>
-              <div className="grid grid-cols-2 gap-3">
-                {languageOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setLanguage(option.value)}
-                    className={`rounded-2xl border px-4 py-3 text-left text-sm transition-all ${
-                      language === option.value
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/30"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Role Selection */}
             <div className="space-y-3">
               <Label>I am a...</Label>
@@ -154,4 +132,8 @@ export default function Register() {
       </div>
     </div>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unable to create account";
 }

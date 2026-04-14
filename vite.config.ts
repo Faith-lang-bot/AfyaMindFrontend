@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const apiTarget = env.VITE_API_BASE || "http://localhost:8080";
+  const apiTarget = env.VITE_API_BASE || "https://afyamentbackend.onrender.com";
 
   return {
     server: {

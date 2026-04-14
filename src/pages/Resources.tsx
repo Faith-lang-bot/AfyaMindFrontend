@@ -102,7 +102,7 @@ const featuredResources: FeaturedResource[] = [
     steps: [
       "Move closer to another person or contact a trusted support immediately if you might act on suicidal thoughts.",
       "Use local emergency services or a crisis line right away if you are in immediate danger.",
-      "Open Care Chat or contact your health worker now rather than trying to carry the moment alone.",
+      "Open CHW Support or contact your health worker now rather than trying to carry the moment alone.",
     ],
   },
 ];
@@ -284,8 +284,8 @@ export default function Resources() {
 
           <div className="mt-5 flex flex-wrap gap-3">
             <Button asChild className="rounded-full px-5">
-              <Link to={isUser ? "/care-chat" : "/caseload"}>
-                {isUser ? "Open Care Chat" : "View Caseload"}
+              <Link to={isUser ? "/directory" : "/caseload"}>
+                {isUser ? "Open CHW Support" : "View Caseload"}
               </Link>
             </Button>
             <Button asChild variant="outline" className="rounded-full px-5">
@@ -312,7 +312,7 @@ export default function Resources() {
           <div className="mt-5 flex flex-col gap-3 text-sm leading-6 text-muted-foreground">
             <p>Go to the nearest emergency service or call your local emergency number immediately.</p>
             <p>Reach a trusted person now and stay near human support instead of being alone.</p>
-            <p>Use Care Chat to contact your health worker as an additional support step, not a replacement for emergency help.</p>
+            <p>Use CHW Support to contact your health worker as an additional support step, not a replacement for emergency help.</p>
           </div>
         </div>
       </div>

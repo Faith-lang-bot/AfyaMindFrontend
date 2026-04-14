@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
+import { api, type JournalEntry } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function Journal() {
   const { toast } = useToast();
   const [entry, setEntry] = useState("");
-  const [entries, setEntries] = useState<any[]>([]);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -23,8 +23,8 @@ export default function Journal() {
       setEntry("");
       const updated = await api.getJournal();
       setEntries(updated);
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Error", description: getErrorMessage(err), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export default function Journal() {
       </div>
 
       <div className="flex flex-col gap-4">
-        {entries.map((e: any) => (
+        {entries.map((e) => (
           <div key={e.id} className="card-elevated p-6">
             <p className="text-xs text-muted-foreground mb-2 font-medium">
               {new Date(e.created_at).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
@@ -64,4 +64,8 @@ export default function Journal() {
       </div>
     </div>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Something went wrong";
 }
