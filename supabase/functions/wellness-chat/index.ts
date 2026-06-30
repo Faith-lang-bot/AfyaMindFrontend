@@ -1,6 +1,7 @@
 /// <reference lib="deno.ns" />
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import AfricasTalking from "npm:africastalking";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -225,6 +226,50 @@ function extractReply(rawText: string): string {
 }
 
 async function sendSMS(to: string, message: string): Promise<{ status: string }> {
+  const smsProvider = getEnv("SMS_PROVIDER", "").toLowerCase();
+  const hasAfricaTalkingCredentials = Boolean(getOptionalEnv("AFRICASTALKING_API_KEY")) && Boolean(getOptionalEnv("AFRICASTALKING_USERNAME"));
+
+  if (smsProvider === "africastalking" || hasAfricaTalkingCredentials) {
+    return sendSMSViaAfricasTalking(to, message);
+  }
+
+  return sendSMSViaDevText(to, message);
+}
+
+async function sendSMSViaAfricasTalking(to: string, message: string): Promise<{ status: string }> {
+  const apiKey = getRequiredEnv("AFRICASTALKING_API_KEY");
+  const username = getRequiredEnv("AFRICASTALKING_USERNAME");
+  const senderId = getOptionalEnv("AFRICASTALKING_SENDER_ID");
+  const useSandbox = getEnv("AFRICASTALKING_SANDBOX", "false").toLowerCase() === "true";
+
+  const africasTalking = AfricasTalking({
+    apiKey,
+    username,
+    sandbox: useSandbox,
+  });
+
+  const sms = africasTalking.SMS;
+  const payload: Record<string, unknown> = {
+    to,
+    message,
+  };
+  if (senderId) payload.from = senderId;
+
+  const response = await sms.send(payload);
+  const recipients = Array.isArray(response?.SMSMessageData?.Recipients)
+    ? response.SMSMessageData.Recipients
+    : [];
+  const firstRecipient = recipients[0];
+  const status = firstNonEmpty(
+    firstRecipient?.status as string | undefined,
+    response?.SMSMessageData?.Message as string | undefined,
+    "queued",
+  );
+
+  return { status };
+}
+
+async function sendSMSViaDevText(to: string, message: string): Promise<{ status: string }> {
   const smsURL = getEnv("DEVTEXT_SMS_URL", "https://devtext.site/v1/sms/send");
   const smsAPIKey = getRequiredEnv("DEVTEXT_API_KEY");
 
@@ -255,6 +300,15 @@ function truncateForSMS(message: string): string {
   return normalized.length > 320 ? `${normalized.slice(0, 317)}...` : normalized;
 }
 
+function firstNonEmpty(...values: Array<string | undefined | null>): string {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+  return "";
+}
+
 function base64UrlEncode(input: string | ArrayBuffer): string {
   const bytes = typeof input === "string"
     ? new TextEncoder().encode(input)
@@ -271,6 +325,11 @@ function base64UrlEncode(input: string | ArrayBuffer): string {
 function getEnv(key: string, fallback: string): string {
   const value = Deno.env.get(key);
   return value && value.trim() ? value.trim() : fallback;
+}
+
+function getOptionalEnv(key: string): string {
+  const value = Deno.env.get(key);
+  return value?.trim() || "";
 }
 
 function getRequiredEnv(key: string): string {

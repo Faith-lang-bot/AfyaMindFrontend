@@ -210,6 +210,10 @@ interface AdmissionResponse {
   admission_flow_complete: boolean;
 }
 
+interface AdmissionStatusResponse {
+  completed: boolean;
+}
+
 interface AIAssistantResponse {
   model: string;
   reply: string;
@@ -402,6 +406,10 @@ class ApiClient {
     return this.request<AdmissionResponse>("POST", "/api/admissions/start", data);
   }
 
+  getAdmissionStatus() {
+    return this.request<AdmissionStatusResponse>("GET", "/api/admissions/status");
+  }
+
   generateCertification() {
     return this.request<CertificateResponse>("POST", "/api/certification/generate");
   }
@@ -410,6 +418,7 @@ class ApiClient {
 export const api = new ApiClient();
 export type {
   AdmissionResponse,
+  AdmissionStatusResponse,
   Appointment,
   AppointmentCreationResponse,
   AuthResponse,

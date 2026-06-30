@@ -285,11 +285,11 @@ export default function Admission() {
       <header className="space-y-3">
         <div className="inline-flex w-fit items-center gap-2 rounded-full bg-secondary px-4 py-2 text-sm text-muted-foreground">
           <AlertTriangle className="h-4 w-4" />
-          Required after login
+          One-time onboarding assessment
         </div>
-        <h1 className="text-4xl tracking-tight">Check-in Assessment</h1>
+        <h1 className="text-4xl tracking-tight">Initial Mental Health Assessment</h1>
         <p className="max-w-3xl text-muted-foreground">
-          Move through each section in order. This check-in is the main assessment container for your mental health screens, progress, levels, and matched exercises.
+          Complete this full screening once when your account is created so AfyaMind can build your starting care plan and matched exercises.
         </p>
       </header>
 

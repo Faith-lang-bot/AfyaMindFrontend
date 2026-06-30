@@ -1,11 +1,9 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppSidebar } from "./AppSidebar";
-import { hasCompletedAdmission } from "@/lib/wellness";
 
 export function AppLayout() {
-  const { user, loading, isUser } = useAuth();
-  const location = useLocation();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -16,18 +14,12 @@ export function AppLayout() {
   }
 
   if (!user) return <Navigate to="/login" replace />;
-  if (isUser && !hasCompletedAdmission(user.id) && location.pathname !== "/admission") {
-    return <Navigate to="/admission" replace />;
-  }
-  if (isUser && hasCompletedAdmission(user.id) && location.pathname === "/admission") {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <div className="flex min-h-screen w-full bg-background">
       <AppSidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-5xl mx-auto px-8 py-10 lg:px-16 lg:py-14">
+      <main className="min-h-screen flex-1 bg-transparent md:ml-80">
+        <div className="mx-auto max-w-6xl px-5 py-8 sm:px-8 lg:px-14 lg:py-12">
           <Outlet />
         </div>
       </main>

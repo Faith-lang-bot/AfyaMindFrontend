@@ -40,10 +40,10 @@ const multilingualPrompts: Record<string, string[]> = {
     "Necesito ideas para dormir mejor",
   ],
   ar: [
-    "I feel overwhelmed today",
-    "Guide me through a short breathing exercise",
-    "Help me understand my support plan",
-    "I need calm sleep ideas",
+    "أشعر بأنني مرهق اليوم",
+    "أرشدني إلى تمرين تنفس قصير",
+    "ساعدني على فهم خطة الدعم الخاصة بي",
+    "أحتاج إلى أفكار هادئة للنوم",
   ],
 };
 
@@ -79,12 +79,20 @@ export default function AIChat() {
     setLoading(true);
 
     try {
+      const recentContext = [...messages, userMsg]
+        .slice(-6)
+        .map((message) => `${message.role === "assistant" ? "Assistant" : "User"}: ${message.content}`)
+        .join("\n");
+
       const contextualPrompt = [
         carePlan
           ? `Current support status: ${carePlan.riskLevel} risk, PHQ-9 score ${carePlan.phq9Score}, focuses ${carePlan.primaryFocuses.join(", ")}, ${carePlan.recommendationMessage}`
           : "",
-        "Keep the conversation warm, practical, and flowing naturally.",
-        prompt,
+        `Reply in ${user?.language || "en"} and stay consistent with that language unless the user switches.`,
+        "Keep the conversation warm, practical, natural, and specific to the latest user message.",
+        "Recent conversation:",
+        recentContext,
+        `Latest user message: ${prompt}`,
       ]
         .filter(Boolean)
         .join("\n");

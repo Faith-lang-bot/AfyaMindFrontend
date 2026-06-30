@@ -9,52 +9,52 @@
     --font-serif: 'Lora', serif;
     --font-sans: 'Outfit', sans-serif;
 
-    --background: 30 20% 95%;
-    --foreground: 25 8% 24%;
+    --background: 138 38% 96%;
+    --foreground: 146 28% 18%;
 
-    --card: 40 25% 99%;
-    --card-foreground: 25 8% 24%;
+    --card: 0 0% 100%;
+    --card-foreground: 146 28% 18%;
 
-    --popover: 40 25% 99%;
-    --popover-foreground: 25 8% 24%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 146 28% 18%;
 
-    --primary: 140 10% 42%;
-    --primary-foreground: 40 25% 99%;
+    --primary: 145 42% 35%;
+    --primary-foreground: 140 60% 98%;
 
-    --secondary: 30 15% 88%;
-    --secondary-foreground: 25 8% 24%;
+    --secondary: 140 28% 91%;
+    --secondary-foreground: 146 28% 22%;
 
-    --muted: 30 15% 88%;
-    --muted-foreground: 30 7% 53%;
+    --muted: 138 22% 92%;
+    --muted-foreground: 146 12% 40%;
 
-    --accent: 30 50% 90%;
-    --accent-foreground: 25 8% 24%;
+    --accent: 132 42% 88%;
+    --accent-foreground: 146 28% 20%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 40 25% 99%;
+    --destructive-foreground: 140 60% 98%;
 
-    --border: 30 15% 85%;
-    --input: 30 15% 85%;
-    --ring: 140 10% 42%;
+    --border: 138 20% 84%;
+    --input: 138 20% 84%;
+    --ring: 145 42% 35%;
 
     --radius: 1rem;
 
-    --clay: 15 45% 72%;
-    --clay-foreground: 25 8% 24%;
-    --sun: 33 60% 90%;
-    --sun-foreground: 25 8% 24%;
-    --sage: 130 10% 66%;
-    --sage-foreground: 25 8% 24%;
-    --stone: 30 12% 86%;
+    --clay: 146 34% 86%;
+    --clay-foreground: 146 28% 20%;
+    --sun: 110 44% 90%;
+    --sun-foreground: 146 28% 20%;
+    --sage: 145 30% 72%;
+    --sage-foreground: 146 28% 18%;
+    --stone: 135 18% 88%;
 
-    --sidebar-background: 40 25% 99%;
-    --sidebar-foreground: 25 8% 24%;
-    --sidebar-primary: 140 10% 42%;
-    --sidebar-primary-foreground: 40 25% 99%;
-    --sidebar-accent: 30 15% 88%;
-    --sidebar-accent-foreground: 25 8% 24%;
-    --sidebar-border: 30 15% 85%;
-    --sidebar-ring: 140 10% 42%;
+    --sidebar-background: 142 34% 93%;
+    --sidebar-foreground: 146 28% 18%;
+    --sidebar-primary: 145 42% 35%;
+    --sidebar-primary-foreground: 140 60% 98%;
+    --sidebar-accent: 136 30% 88%;
+    --sidebar-accent-foreground: 146 28% 20%;
+    --sidebar-border: 138 20% 82%;
+    --sidebar-ring: 145 42% 35%;
   }
 
   .dark {
@@ -100,6 +100,11 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: var(--font-sans);
+    background-image:
+      radial-gradient(circle at top left, hsla(142, 48%, 88%, 0.9), transparent 32%),
+      radial-gradient(circle at top right, hsla(126, 46%, 92%, 0.7), transparent 28%),
+      linear-gradient(180deg, hsla(138, 36%, 97%, 1) 0%, hsla(138, 28%, 94%, 1) 100%);
+    background-attachment: fixed;
   }
 
   h1, h2, h3, h4 {
@@ -109,14 +114,18 @@
 
 @layer components {
   .card-elevated {
-    @apply bg-card rounded-[2rem] shadow-[0_8px_32px_rgba(66,61,56,0.03)] border border-border/30;
+    @apply bg-card rounded-[2rem] border border-white/60;
+    box-shadow: 0 18px 48px rgba(49, 88, 66, 0.08);
+    backdrop-filter: blur(12px);
   }
 
   .nav-item {
-    @apply flex items-center gap-4 px-4 py-3 rounded-2xl text-muted-foreground hover:bg-secondary/50 transition-all;
+    @apply flex items-center gap-4 px-4 py-3 rounded-2xl text-muted-foreground hover:bg-white/55 transition-all;
   }
 
   .nav-item-active {
-    @apply flex items-center gap-4 px-4 py-3 bg-card shadow-[0_2px_8px_rgba(66,61,56,0.04)] rounded-2xl text-foreground font-medium transition-all;
+    @apply flex items-center gap-4 px-4 py-3 rounded-2xl text-foreground font-medium transition-all;
+    background: linear-gradient(135deg, hsla(140, 48%, 97%, 0.98), hsla(133, 42%, 90%, 0.92));
+    box-shadow: 0 10px 24px rgba(56, 104, 76, 0.12);
   }
 }

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Phone } from "lucide-react";
-import { hasCompletedAdmission } from "@/lib/wellness";
 
 export default function Register() {
   const { register } = useAuth();
@@ -27,12 +26,8 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const authUser = await register(name, email, phone.trim(), password, "en", role);
-      const nextPath =
-        authUser.role === "mental_health_user" && !hasCompletedAdmission(authUser.id)
-          ? "/admission"
-          : "/dashboard";
-      navigate(nextPath);
+      await register(name, email, phone.trim(), password, "en", role);
+      navigate("/dashboard");
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {

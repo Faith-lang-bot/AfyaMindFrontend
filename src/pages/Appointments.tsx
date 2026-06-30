@@ -51,7 +51,14 @@ export default function Appointments() {
       setAppointments(appointmentsData);
       setReminders(remindersData);
       setDirectory(directoryData);
-      setSelectedCHW((current) => current && directoryData.some((entry) => entry.id === current.id) ? current : directoryData.find((entry) => entry.is_registered) ?? null);
+      setSelectedCHW((current) => {
+        const nextSelected =
+          current && directoryData.some((entry) => entry.id === current.id)
+            ? current
+            : directoryData.find((entry) => entry.is_registered) ?? null;
+        setNotificationPhone(nextSelected?.phone || "");
+        return nextSelected;
+      });
     } catch (err: any) {
       toast({ title: "Unable to load appointments", description: err.message, variant: "destructive" });
     }
@@ -83,6 +90,9 @@ export default function Appointments() {
 
       if (response.contact_sms_warning) {
         bookingSMSMessage += ` ${response.contact_sms_warning}`;
+      }
+      if (response.sms_warning) {
+        bookingSMSMessage += ` ${response.sms_warning}`;
       }
 
       toast({

@@ -4,7 +4,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { hasCompletedAdmission } from "@/lib/wellness";
 
 export default function Login() {
   const { login } = useAuth();
@@ -19,12 +18,8 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const authUser = await login(email, password);
-      const nextPath =
-        authUser.role === "mental_health_user" && !hasCompletedAdmission(authUser.id)
-          ? "/admission"
-          : "/dashboard";
-      navigate(nextPath);
+      await login(email, password);
+      navigate("/dashboard");
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
